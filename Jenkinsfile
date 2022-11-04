@@ -12,7 +12,7 @@ pipeline {
 			stage("build"){
 				steps{ 
 					echo "build code"
-					cd simple-java-maven-app/
+					sh "cd simple-java-maven-app/"
 					sh 'mvn clean package'
 					}
 				}
