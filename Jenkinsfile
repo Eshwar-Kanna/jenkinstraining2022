@@ -11,12 +11,14 @@ pipeline {
 				}
 			stage("build"){
 				steps{ 
-					echo " build code"
-					sh ' mvn clean package '
+					echo "build code"
+					sh 'mvn clean package'
 					}
 				}
 			stage("test"){
-				steps{echo " code tested and approved"}
+				steps{
+					echo "code tested and approved"
+					}
 				}
 			
 			stage("deploy") {
