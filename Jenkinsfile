@@ -12,7 +12,7 @@ pipeline {
 			stage("test"){
 				steps{echo " git test my code"}
 				}
-			stage("deploy) {
+			stage("deploy") {
 				steps{echo "git depoly my code"}
 				}
 			}
