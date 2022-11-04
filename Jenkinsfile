@@ -6,7 +6,7 @@ pipeline {
 
 				steps { 
 					echo "pulling the code from github " 
-					git "https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git"
+					git "https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git "
 					}
 				}
 			stage("build"){
