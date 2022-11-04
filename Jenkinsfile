@@ -24,7 +24,6 @@ pipeline {
 			stage("deploy") {
 				steps{
 					echo "code is depolying in the production"
-					sh "java - jar target/*.jar"
 				
 					}
 				}
