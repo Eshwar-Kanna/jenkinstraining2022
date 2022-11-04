@@ -13,7 +13,7 @@ pipeline {
 				steps{echo " git test my code"}
 				}
 			stage("deploy") {
-				steps{echo "git depoly my code"}
+				steps{echo "git depoly my second code"}
 				}
 			}
 
