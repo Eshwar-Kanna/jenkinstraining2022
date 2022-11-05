@@ -12,7 +12,7 @@ pipeline {
 			stage("build"){
 				steps{ 
 					echo "build code"
-		
+					sh 'mvn clean package'
 					}
 				}
 			stage("test"){
@@ -24,7 +24,7 @@ pipeline {
 			stage("deploy") {
 				steps{
 					echo "code is depolying in the production"
-				
+					sh 'java -jar target/*.jar'
 					}
 				}
 			}
