@@ -1,0 +1,50 @@
+to minimize the the time of launching nodes or agent program like Maven we use containerization
+
+Launch an instance : AMILinux : Dockerslave : launch
+
+connect to instance 
+		yum install docker -y 
+		systemctl enable docker --now
+		docker pull vimal13/jenkins-slave-maven
+			this image has   git , maven , ssh preinstalled in it
+
+		docker run -it --name os3  --rm  vimal13/jenkins-slave-maven
+			it runs SSH  to exit press ctrl+p+q
+		docker inspect  os3     (find ip from the info)
+			ssh -l jenkins  <ip of os3>  and provide password as jenkins
+			then ssh is connected
+		root workspace is  /home/jenkins
+
+Bydefault docker only connect to the systems locally  to make connections from outside  we update file
+		vim  /usr/lib/systemd/system/docker:service
+
+			in the line  Executestart  add  -H tcp://0.0.0.0:4243
+
+		systemctl daemon-reload
+		systemctl  restart docker
+
+	remove all images and containers in docker to set clean  environment 
+
+	In Docker instance : security groups : inbound rule :  TCP    4243  all 
+
+	In jenkins instance 
+		curl < ip of docker > : 4243   - to check connectivity 
+
+	In jenkins 
+		Manage plugins  : available : select docker  : install & restart  
+	
+
+CREATING DOCKER CLOUD
+	
+	manage nodes : configure clouds 
+		docker , tcp://ip of docker :4243 , select enable & expose HOST 
+		docker agent template  : add agent : label (dockerbuild) : select enable 
+		docker build image : in docker image (vimal13/jenkins-slave-maven)
+		container setting : remote file (/home/jenkins)  : usage (only build jobs with label):
+		connect methos with SSH  : key ( configured ssh cred) , cred ( add : jenkins , 		jenkins) , verifying type ( non verifyingg verification strategy )  save
+
+
+Create job   -  dockerjob (freestyle) : GitHub  (   https://github.com/vimallinuxworld13/simple-java-maven-app.git/) : Restrict where this project can be run(dockerbuild) : SCM ( Git ,  https://github.com/vimallinuxworld13/simple-java-maven-app.git/) : Build steps ( Invoke top-level Maven targets  : clean packages ) : Execute shell ( java -jar target/*.jar) : Archive the artifacts ( target/*.jar)   and SAVE 
+
+	start build  
+		 as soon as we start the build the the images is pulled and the container is launched and the build run in that container 

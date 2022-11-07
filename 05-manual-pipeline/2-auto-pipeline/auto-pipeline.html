@@ -1,0 +1,46 @@
+
+
+---------------  FOR THE FULL AUTOMATION OF PIPELINE  INCLUDING CREATING JOB ----------------
+
+--  here we use Groovy Language as code in creating pipeline
+
+create a repository in github  and uplaod the Jenkinsfile in it 
+
+create na new job :  pipelinejob : (pipeline)  : in pipeline ( pipeline script from SCM  : Git ) : url of repo having Jenkinsfile : Triggers ( Poll scm )  and SAVE 
+		start build  and view stage 
+
+	CODE IN JENKINSFILE
+
+	
+
+pipeline {
+
+	agent { label "linuxbuildnode" }
+		stages {
+			stage("SCM"){
+
+				steps { 
+		echo "pulling the code from github " 
+		git "https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git "
+					}
+				}
+			stage("build"){
+				steps{ 
+					echo " build code"
+					sh ' mvn clean package '
+					}
+				}
+			stage("test"){
+				steps{echo " code tested and approved"}
+				}
+			
+			stage("deploy") {
+				steps{
+					echo "code is depolying in the production"
+					sh "java - jar target/*.jar"
+				
+					}
+				}
+			}
+
+	}

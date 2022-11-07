@@ -1,0 +1,59 @@
+
+when we create a new job , then a separate workspace is created for that particular job and all the code 	or files we download will store in that workspace
+
+
+
+------------------------------	MASTER -SLAVE ARCHITECTURE 	--------------------------
+
+
+to see home directory of jenkins  
+		dashboard  - Manage Jenkins - Configure system - home directory
+
+
+In configure system  : update Jenkins ip  in Jenkins URL   each time we start the instance
+
+Launch two instances individually :
+		1  jenkins master  ( already exist )
+		2  jenkins slave
+
+we cannot run multi jobs simultaneously bydefault to run we should enable Execute Concurrent Builds 	while creating 
+
+In Manage Jenkins  - configure systems  - we mention no.of Executers to Define how many builds run 	in parallel  but only different job 
+
+If their is any requirement of building same job multiple times we should enable  Execute concurrent 	builds if necessary  while creating the job or in configure
+
+
+
+ ---------- 	connecting Master and Slave using ssh	----------
+
+		-   Connect
+	Master       -   Agent Program 	- Slave
+		-   Run 
+
+
+Creating  a node  in jenkins 
+	dashboard - manage jenkins - manage nodes and clouds  - new node - name(linux-slave-1) 		select permanent  and create    , launch agents via SSH ,  in host (public ip of slave 			instance) and ADD credentials,  select jenkins , in Kind select SSH username with 			privatekey , username(ec2-user) , privatekey select enter directly , copy private 			key used in launching instance and paste and ADD and select ec2-user in the 			credentials , create a folder in slave instance add its path as Remote root directory 			of node   and add label as linuxbuildnode  and SAVE
+
+
+	but here the slave cannot connect to the node since while connecting to instance using ssh 	initially it ask for confirmation which is not responded back by instance for such case we reconfigure by selecting non verification  in HOST key verification and launch the agent 
+
+	CONNECTION IS MADE BY ABOVE PROCESS 
+
+
+ 	2 install java in Slave instance 
+		
+		sudo amazon-linux-extras install java-openjdk11
+	java version of master and slave should be same  
+	
+	THEN THE NODE IS CONNECTED  
+
+ and to specify the node in which the job should run we enable the option of  " Restrict where this project 		can be run " and provide lablename   in configure
+	
+create a testjob run in slavenode by specifying some file to create after build and check wheather the 	file created in the slave instance
+
+
+	
+
+
+
+

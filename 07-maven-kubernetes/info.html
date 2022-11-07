@@ -1,0 +1,180 @@
+------------- Integrating Jenkins And Kubernetes  --------------
+
+=> KOPS  is the tool used to install Kubernetes in AWS
+
+=> we use kubernetes in the final stage ie. prod env since we manage resources to clients from the prod stage which is directly connected 
+
+	 		         slave 1 
+	prod env    -     master 		
+			          slave 2
+
+
+KOPS  will setup the complete k8s cluster
+
+connect to prod env  instance
+	run commands 
+
+## DOWNLOAD KOPS 
+
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+
+ls
+
+##  TO MAKE FILE EXECUTABLE
+
+chmod +x kops-linux-amd64
+
+##  MOVE FILE TO kops 
+
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+
+## downloading kubectl command
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+## kubectl executable
+
+chmod +x ./kubectl
+
+## moving file to  kubectl 
+
+sudo mv ./kubectl /usr/bin/kubectl
+
+
+
+	create a IAM role in AWS to integrate Ec2 and S3
+IAM - roles - create role (ec2s3) - ec2 - Administrator Access - create
+
+## provide this role to the prod env 
+      prod os - actions - security - Modify IAM role - select ec2s3 and save
+
+## creating a s3 storage with name kanna in ap-south-1
+
+aws s3 mb s3://kanna.in.k8s --region ap-south-1
+
+#storing S3 in a variable KOPS_STATE_STORE
+
+export KOPS_STATE_STORE=s3://kanna.in.k8s
+
+## create a Route53 
+	aws - Route53 - Hosted zones - create Hosted zone - jenkins123.com - private , ap-south-1 , vpc  and  create 
+
+##   storing Route53 in a variable KOPS_CLUSTER_NAME
+
+export KOPS_CLUSTER_NAME=jenkinstraining.com
+
+## to make this variables permanent we add commands in file
+# vim /root/.bashrc 
+export KOPS_CLUSTER_NAME=jenkinstraining.com
+export KOPS_STATE_STORE=s3://kanna.in.k8s
+
+## to generate pubkey and privatekey 
+ssh-keygen
+
+
+## to create the cluster 
+
+kops create cluster \
+--state=${KOPS_STATE_STORE} \
+--node-count=2 \
+--master-size=t3.medium \
+--node-size=t3.medium \
+--zones=ap-south-1a,ap-south-1b \
+--name=${KOPS_CLUSTER_NAME} \
+--dns private \
+--master-count 1
+
+##
+kops get cluster 
+
+## to configure the cluster 
+kops update cluster --name jenkinstraining.com --yes --admin
+
+# 
+
+kops validate cluster --wait 10m
+
+
+
+######  we developed a myjavaapp in previous pipeline at port 8080
+but to auto scale and auto recreate after destruction we use kubernetes
+
+we use webappsvc.yml   to expose the app to particular port all the time
+
+code in webappsvc.yml
+
+	apiVersion: v1
+	kind: Service
+	metadata:
+	  name: my-service
+	  labels:
+	    app:  myapp-service
+	spec:
+	  selector:
+	    app: myjavawebapp
+	  type: NodePort
+	  ports:
+	    - nodePort: 30000
+	      port: 8080
+	      targetPort: 8080
+
+
+####  instead using the triggers that auto build when code changes and push to the repo , in which the jenkins should trigger the code every instant to check wheather the code is changed we can use webhooks of the repo such that the github send the code to jenkins when the code changed
+
+	create webhook - go to repo : settings : webhook :
+payload repo ( http://<ip of jenkins >:8080/github-webhook/) : select just push event and can select as per requirement
+
+to automate the push after commiting the code in git we use hooks
+
+	in git 
+	
+	cd /.git/hooks/
+		vim post-commit
+			#!/bin/sh
+			git push
+
+as soon as we commit the file will be pushed automatically
+
+
+## to run build using API   ###  ie. when we hit a url the build starts
+
+in the configuration of Pipeline   - select Trigger build remotely and provide a password  as token 
+	use url as 
+		jenkinsip:8080/job/<jobname>/build?token=<password used>
+
+
+but to run through API from other os it requires the authentication of jenkins which is not better practise to provide to all in such case we use a access token of jenkins 
+
+	In jenkins - account - configure- API Token  - generate token 
+ and use  
+	curl  -u username:token   api
+
+
+to manage jenkins using CLI 
+
+	mange jenkins - jenkins Cli - here the java command is provided use it in the CMD prompt  add auth  and use rewuire option such as  get-job   for getting info
+
+
+ROLE BASED ACTION CONTROL
+download plugin - Role based autherization strategy 
+
+Dashboard - Manage users - create user
+	
+
+	bydefault every user get administrator access but to give certain role of access 
+
+
+Manage jenkins - config Global security ( authorization role based strategy ) and save
+
+manage & assign role - manage roles - and give required access 
+
+provide this role to any user to get this particular access
+
+we can use regex like DEV_*   so that all the user starting username with DEV   can be accessed to the role
+
+
+
+
+
+
+

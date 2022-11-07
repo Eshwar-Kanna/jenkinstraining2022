@@ -1,0 +1,30 @@
+
+
+----------------------------------  	Manual Pipeline	 ----------------------
+
+
+ 	job A  ------------------  job B ------------- job C ------------- job D 
+
+Here  job A is called upstream of job B  and  job C is called  downstream of job B
+
+Note : update jenkins url with new ip address  for  Master  node  and permanent nodes
+
+create  job A : freestyle  : ADD build step ( echo " iam job A ")
+
+create job B : freestyle  : copy ( job A)  :  ADD build step ( echo " iam job B ")
+
+create job C : freestyle  : copy ( job B)  :  ADD build step ( echo " iam job C ")
+
+create job D : freestyle  : copy ( job C)  :  ADD build step ( echo " iam job D ")
+
+	start build  you notice all  jobs run initiating from job A and one after other
+
+Here job A will bu run by user  and B , C ,D will run by upstream agent 
+
+To create separate view  for these pipeline  : add view  and provide name , select jobs and add columns 	as per requirement
+
+for better feature of visualization of pipeline   install Build pipeline and deploy pipeline plugins
+
+
+we can use trigger  ( trigger even if build fails ) to run even if its upstream fail 
+

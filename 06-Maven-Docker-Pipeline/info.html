@@ -1,0 +1,211 @@
+=> when we create a package the extension must be   .war
+
+	html 
+	php	=>      webserver	=>     HTTP  Apache 
+	js
+
+
+	java
+		=>     Appserver	=>     Jboss  , Tomcat
+	.war 
+
+
+=>   QAT test env  is used  for the approval of the code before deploying it into the production env
+
+Manual Approval  	=>   continuous  Delivery
+Automatic Approval  =>   continuous Deployement
+
+=> install docker and maven in all the instances using in the pipeline
+Note : update IP of master node and all other permanent nodes
+
+createjob : test1(freestyle) : In General (project as parametarized(select string(x))) : In build (execute shell(echo $x)) 
+
+=> when we build test1  then it ask for the x value and print it 
+
+=>  we can print parameter value from pre created parameter names such as  BUILD_NAME , BUILD_TAG
+
+=>  When their is a requirement of using sensitive data (password)in the code it is not better practise to use the value directly in the code which is publicly accessible in that case we create a secret text  and store  in a variable and use this variable in the code
+
+	manage jenkins - manage credentials  - global - Add cred  - secret text - in secret (write 	password) - give ID - write description    and SAVE
+
+=>  to get the syntax of using the secret text in the code  use pipeline syntax
+
+	pipeline syntax - with credentials binding - select password - set local variable  - generate 	script   and copy to use in code
+
+Note : install SSH Agent  plugin in jenkins 
+
+=> Launch two instances naming  QA env and Prod env respectively  and install docker , maven in both
+=> enable docker in both instances
+
+create new job  : End2EndPipeline  ( pipeline ) :  in pipeline  ( pipeline script from SCM  : Git ) : url of repo having Jenkinsfile : Triggers ( Poll scm )  and SAVE
+                start build  and view stage
+
+
+=> ssh agent : is used to specify where the code to be deployed 
+	creating ssh agent : Manage Jenkins - manage credentials - global - add cred (ssh username with private key ) - provide ID - user name - copy private key - save  and use the ID in ssh agent 
+
+
+
+
+=> retry() :  it is used to pause the stage for mentioned time if any process in its above stage estimated that it takes few seconds to complete or install any package
+
+=> -o strictHostKeyChecking = no   :  when we connect to an instance remotely using SSH it asks for the authentication Yes , so here we cannot provide it while automating the pipeline so to disable the authentication we use this option 
+ 
+
+CODE in Jenkinsfile
+
+
+		pipeline {
+    
+    		agent {
+        			label "linuxbuildnode"
+    			}
+    
+    
+    		stages {
+       			stage('SCM') {
+            				steps {
+                			git 'https://github.com/Eshwar-Kanna/jenkins-docker-java-maven.git '
+                
+           					 }
+            
+       				 }
+        
+        			stage('Build by Maven Package') {
+            				steps {
+                					sh 'mvn clean package'
+            					}
+            
+       				 }
+        
+        
+       			 stage('Build Docker OWN image') {
+            				steps {
+               			 sh "sudo docker build -t  eshwar29/javaweb:${BUILD_TAG}  ."
+                			//sh 'whoami'
+           					 }
+            
+       				 }
+        
+        
+        			stage('Push Image to Docker HUB') {
+            				steps {
+                
+                			withCredentials([string(credentialsId: 'DOCKER_PAASWD', variable: 'DOCKER_HUB_PASSWORD')]) {
+    			// some block
+                 			sh "sudo docker login -u eshwar29 -p $DOCKER_HUB_PASSWORD"
+			}
+               
+               			sh "sudo docker push eshwar29/javaweb:${BUILD_TAG}"
+           				 	}
+            
+        				}
+        
+        
+       			 stage('Deploy webAPP in DEV Env') {
+            				steps {
+                			sh 'sudo docker rm -f myjavaapp'
+                			sh "sudo docker run  -d  -p  8080:8080 --name myjavaapp   eshwar29/javaweb:${BUILD_TAG}"
+                			//sh 'whoami'
+            					}
+            
+        				}
+        
+        
+        			stage('Deploy webAPP in QA/Test Env') {
+            				steps {
+               
+               				sshagent(['QA_ENV_SSH_CRED']) {
+    
+                    				sh "ssh  -o  StrictHostKeyChecking=no ec2-user@13.233.100.238 sudo docker rm -f myjavaapp"
+                    				sh "ssh ec2-user@13.233.100.238 sudo docker run  -d  -p  8080:8080 --name myjavaapp   eshwar29/javaweb:${BUILD_TAG}"
+                						}
+
+            					}
+            
+        				}
+        
+        
+         			stage('QAT Test') {
+            				steps {
+                
+              				 // sh 'curl --silent http://13.233.100.238:8080/java-web-app/ |  grep India'
+                
+               				 retry(10) {
+                   				 sh 'curl --silent http://13.233.100.238:8080/java-web-app/ |  grep India'
+                						}
+            
+               
+            					}
+       				 }
+          
+        
+         
+         
+        			stage('approved') {
+            				steps {
+                
+            
+            				script {
+               			 Boolean userInput = input(id: 'Proceed1', message: 'Promote build?', parameters: [[$class: 'BooleanParameterDefinition', defaultValue: true, description: '', name: 'Please confirm you agree with this']])
+               			 echo 'userInput: ' + userInput
+
+               			 if(userInput == true) {
+                   				 // do action
+               				 }
+			 else {
+                    				// not do action
+                    				echo "Action was aborted."
+               				 }
+            
+                
+            				}
+       			 }
+       		 }
+        
+        
+         
+        
+       			 stage('Deploy webAPP in Prod Env') {
+            				steps {
+               
+                				sshagent(['PROD_ENV_SSH_CRED']) {
+    
+                    				sh "ssh  -o  StrictHostKeyChecking=no ec2-user@13.233.100.238 sudo docker rm -f myjavaapp"
+                    				sh "ssh ec2-user@13.233.100.238 sudo docker run  -d  -p  8080:8080 --name myjavaapp   eshwar29/javaweb:${BUILD_TAG}"
+                						}
+    
+                    
+                    
+               					 }
+
+            				}
+            
+        			} 
+        
+    
+        
+    		}
+    
+  
+        
+     	post {
+         	always {
+             		echo "You can always see me"
+         		}
+         	success {
+             		 echo "I am running because the job ran successfully"
+        		 }
+        	 unstable {
+              		echo "Gear up ! The build is unstable. Try fix it"
+        		 }
+         	failure {
+             		echo "OMG ! The build failed"
+             		mail bcc: '', body: 'hi check this ..', cc: '', from: '', replyTo: '', subject: 'job ete fail', to: 'report@gmail.com'
+         		}
+     	}
+
+    
+    
+}
+

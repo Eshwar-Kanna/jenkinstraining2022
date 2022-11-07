@@ -1,0 +1,38 @@
+
+we use Maven  of JAVA  here that  has the capability of that it can download the libraries or dependencies that the code needed as per developer 
+	pom.xml  is the file that have libraries
+
+whenever the code is given to maven it check cthe code and pom.xml  and perform actions accordingly such as install , compile , and  test 
+
+	connect to slave instance 
+		sudo yum install git  -y
+		git clone  https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git
+		sudo yum install java -y
+		sudo yum install maven  -y
+
+
+	go to the folder cloned from the url 
+		mvn compile
+			a target folder is created after compiled
+
+		mvn package  
+			 my-app-1.0-SNAPSHOT.jar file is created in target folder
+
+	to access the code run 
+		java  -jar    my-app-1.0-SNAPSHOT.jar
+			the output of code will be displayed here
+
+
+		mvn package clean 
+			to clean the package   and re compile and re create the package when 			code updated 
+
+
+
+
+	To use maven in jenkins for testing the code 
+In jenkins  : manage jenkins  :  manage plugins  : search maven integration and install
+
+In Jenkins  
+	create new item - freestyle - Github project ( https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git)  - Restrict where this project can be run(linuxbuildnode) - SCM (git)(repo url : https://github.com/Eshwar-Kanna/simple-java-maven-jenkins2022.git )(credentials : ec2-user) - Build steps (invoke top -level Maven targets  : Goals : clean package)  - add build step : Execute shell : java -jar target/my-app-1.0-SNAPSHOT.jar   - Add post build actions : Archieve the artifacts : target/*.jar  and SAVE
+
+

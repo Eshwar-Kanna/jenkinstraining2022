@@ -1,0 +1,60 @@
+   
+=>	git  init  firstproject
+
+=>	cd  firstproject
+
+=>	notepad   index.html
+
+			<h1>  welcome to the world of jenkins </h1>
+
+
+=>	git  add  index.html 
+
+=>	git  commit  index.html   -m " initial commit"
+
+--------------------	INTEGRATING JENKINS AND GITHUB 	--------------------
+
+ create a repository  (jenkinstraining)      
+ go to that  repository 
+
+USE COMMANDS TO CLONE :
+
+
+	git init
+	git clone https://github.com/Eshwar-Kanna/jenkinstraining2022.git	
+	git branch -M main
+	git remote add origin https://github.com/Eshwar-Kanna/sample.git
+	git push -u origin main
+
+
+
+In Jenkins instance   When we run the commands from shell it bydefault runs with Jenkins user which does not have all access permissions bydefault to provide permissions 
+
+	1    connect to the instance 
+	2    sudo su - root
+	3    vi  /etc/sudoers
+		jenkins   ALL  = ( ALL)  NOPASSWD:ALL
+	4  systemctl restart jenkins
+	5  yum install git  -y 
+
+ 
+
+In  Jenkins   
+
+	create NEW PROJECT     (githubproj)  
+
+	
+	in SCM   :  https://github.com/Eshwar-Kanna/jenkinstraining2022.git
+
+
+In gitbash 
+
+	1   write code in index.html
+	2   git add index.html
+	3   git commit  -m "comment"
+	4   git push  
+
+In  Jenkins 
+	start Build 
+	check the console output will get the updated  code 	
+

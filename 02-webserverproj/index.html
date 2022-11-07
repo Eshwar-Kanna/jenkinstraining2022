@@ -1,0 +1,39 @@
+* bydefault the build run with jenkins user  which is not accessed to run commands in instance 
+* to give access to jenkins user to run commands  
+
+
+	IN JENKINS INSTANCE
+	
+	vi /etc/sudoers     add
+		   jenkins    ALL=(ALL)       NOPASSWD:ALL
+
+IN JENKINS
+
+Create New Project    :  webserverproj   : freestyle  create
+	In SCM : git     In repo url : https://github.com/Eshwar-		Kanna/jenkinstraining2022.git(note : add your repo url here)
+
+	In build Steps   : 
+		sudo yum install httpd -y
+		sudo systemctl start httpd
+		sudo cp index.html  /var/www/html
+
+	In Build Trigger :
+		select  Build periodically  - to set time interval between build automatically
+					in  ***** for every minute
+		select  poll SCM  - to build automatically when the code changed
+			in this case the build starts when the code pushed 
+			to push code automatically after commit  we use hooks/
+
+
+
+
+				cd  .git/
+				cd  hooks/
+				vim post-commit
+					#!/bin/bash
+					git push
+					echo "pushed automatically"
+
+
+			
+

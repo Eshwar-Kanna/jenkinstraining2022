@@ -1,0 +1,25 @@
+ 
+Launch an instance : windows freetier : jenwindslave  :  create
+	in sg groups allow all ip for TCP  8080  in inbound rule
+
+Here Master cannot connect to windows slave since windows dont have SSH such that we make windows slave node connect to master using Agent program by a Protocal RDP and this process is called JavaWebStat (JWS)
+
+	select windows slave instance :  click on connect  : select RDP  : copy dns & username and paster in Remote desktop connection of local OS  and connect provide password by clicking on get password in RDP   , select private file used to launch instance and decrrypt the password ,  use that password and  paste in connection and connect 
+	download the Java in agent instance connected using RDP  
+
+
+	CMD to INSTALL JAVA			https://www.techspot.com/downloads/downloadnow/5553/evp=cc1002b8f24231deaf82043061a06561&file=6310
+
+create a folder in the agent 
+
+Launch new node in jenkins  :   windows-slave-node : provide the path of above created folder in Remote root directory : Label as windowsnode : enable web socket 	and  SAVE
+
+open the windows-slave-node       use the commands  mentioned their  in agent  
+
+create new job  :  winjob1 : freestyle : restrict where to run (windowsnode) : in build step ( execute windows batch command  : ipconfig)  and save
+
+	start build  check console output 
+
+
+
+

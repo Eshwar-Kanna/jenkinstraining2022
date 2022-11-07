@@ -1,0 +1,12 @@
+
+
+In  Jenkins  :
+
+	create new item    :	 firstjob	:          freestyle         :        Build Steps (Execute shell) : write 			command   as    Date    and Save
+
+	start Build      
+
+	check Dashboard 
+
+	check Console Output    for the Result 
+
