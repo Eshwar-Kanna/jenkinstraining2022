@@ -35,7 +35,6 @@ pipeline {
             				steps {
                 
                 			withCredentials([string(credentialsId: 'DOCKER_PAASWD', variable: 'DOCKER_HUB_PASSWORD')]) {
-    			// some block
                  			sh "sudo docker login -u eshwar29 -p $DOCKER_HUB_PASSWORD"
 			}
                
